@@ -2,3 +2,6 @@ Russ
 ----
 
 A chess utility written in Rust.
+
+Chess data courtesy of http://www.hoflink.com/~npollock/chess.html
+distributed in accordance with the readme.
