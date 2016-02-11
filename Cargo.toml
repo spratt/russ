@@ -2,3 +2,6 @@
 name = "russ"
 version = "0.1.0"
 authors = ["Simon Pratt <simon@pr4tt.com>"]
+
+[dependencies]
+glob = "*"
