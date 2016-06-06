@@ -1,74 +1,56 @@
-// Attempt #4
-// #![feature(io)]
-// #![feature(path)]
-// use std::old_io::File;
 
-// Attempt #1
-//extern crate glob;
-//use glob::glob;
+extern crate glob;
+use glob::glob;
 
-// Attempt #3
-// use std::str::from_utf8_owned;
-// use std::fs::File;
-
-// Attempts #1 and #2
-// use std::error::Error;
-// use std::path::Path;
-// use std::io;
-// use std::io::prelude::*;
-// use std::io::BufReader;
+use std::fs::File;
+use std::path::Path;
+//use std::io::prelude::*;
+//use std::error::Error;
+use std::io::{BufRead, BufReader};
 
 fn main() {
-    let mut file = std::fs::File::open("data/gm1931.pgn").unwrap();
-    let mut stdout = std::io::stdout();
-    std::io::copy(&mut file, &mut stdout).unwrap();
+    for entry in glob("data/*.pgn").unwrap() {
+        match entry {
+            Ok(path) => load_pgn(path.as_path()),
+            Err(e)   => println!("{:?}", e),
+        }
+    }
 
-    // Attempt #4
-    // // Create a path to the desired file
-    // let path = Path::new("data/gm1931.pgn");
-    // let display = path.display();
-    // // Open the path in read-only mode, returns `IoResult<File>`
-    // let mut file = match File::open(&path) {
-    //     // The `desc` field of `IoError` is a string that describes the error
-    //     Err(why) => panic!("couldn't open {}: {}", display, why.desc),
-    //     Ok(file) => file,
-    // };
-    // // Read the file contents into a string, returns `IoResult<String>`
-    // match file.read_to_string() {
-    //     Err(why) => panic!("couldn't read {}: {}", display, why.desc),
-    //     Ok(string) => print!("{} contains:\n{}", display, string),
-    // }
-
-    // Attempt #1
-    // for entry in glob("data/*.pgn").unwrap() {
-    //     match entry {
-    //         Ok(path) => load_pgn(path.as_path()),
-    //         Err(e)   => println!("{:?}", e),
-    //     }
-    // }
-
-    // Attempt #2
-    // fn foo() -> io::Result<()> {
-    //     let f = try!(File::open("data/gm1931.pgn"));
-    //     let mut reader = BufReader::new(f);
-    //     let mut buffer = String::new();
-        
-    //     // read a line into buffer
-    //     try!(reader.read_line(&mut buffer));
-        
-    //     println!("{}", buffer);
-    //     Ok(())
-    // }
-    // Ok(foo());
-
-    // Attempt #3
-    // let path = Path::new("data/gm1931.pgn");
-    // let mut hw_file = File::open(&path);
-    // let data = from_utf8_owned(hw_file.read_to_end());
-    // println!("{}", data);
 }
 
-// Attempt #1
-// fn load_pgn(path: &Path) -> Result<(), Error> {
-//     // println!("{:?}", path.display());
-// }
+fn load_pgn(path: &Path) {
+    let display = path.display();
+    let file = match File::open(path) {
+        Ok(f) => f,
+        _     => panic!("opening {}", display),
+    };
+    let reader = BufReader::new(file);
+    let mut header = String::new();
+    let mut moves = String::new();
+    let mut reading_header = true;
+    for l in reader.lines() {
+        let line = match l {
+            Ok(ln) => ln,
+            _      => panic!("reading {}", display),
+        };
+        if line == "" {
+            reading_header = !reading_header;
+            if reading_header {
+                parse_game(&header, &moves);
+                header = String::new();
+                moves = String::new();
+            }
+            continue;
+        }
+        if reading_header {
+            header.push_str(&line);
+        } else {
+            moves.push_str(&line);
+        }
+    }
+    println!("{:?}", display); // remove in future
+}
+
+fn parse_game(header: &String, moves: &String) {
+    // TODO
+}
