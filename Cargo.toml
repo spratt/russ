@@ -4,4 +4,5 @@ version = "0.1.0"
 authors = ["Simon Pratt <simon@pr4tt.com>"]
 
 [dependencies]
+unicode-segmentation = "0.1.2"
 glob = "*"

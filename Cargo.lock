@@ -3,10 +3,16 @@ name = "russ"
 version = "0.1.0"
 dependencies = [
  "glob 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "unicode-segmentation 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "glob"
 version = "0.2.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "unicode-segmentation"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
