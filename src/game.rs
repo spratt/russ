@@ -119,3 +119,25 @@ impl Game {
         v
     }
 }
+
+pub struct GameTree {
+    game_vecs: HashMap<String, Vec<Game>>,
+}
+
+impl GameTree {
+    pub fn new() -> GameTree {
+        GameTree {
+            game_vecs: HashMap::new(),
+        }
+    }
+
+    pub fn add(&mut self, v: Vec<Game>) {
+        for game in v {
+            let first_move: &str = game.moves[0].as_ref();
+            if !self.game_vecs.contains_key(first_move) {
+                self.game_vecs.insert(String::from(first_move), Vec::new());
+            }
+            self.game_vecs.get_mut(first_move).unwrap().push(game.clone());
+        }
+    }
+}

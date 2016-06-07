@@ -3,12 +3,13 @@ use glob::glob;
 
 mod game;
 use game::Game;
+use game::GameTree;
 
 fn main() {
-    let mut v = Vec::new();
+    let mut gt = GameTree::new();
     for entry in glob("data/*.pgn").unwrap() {
         match entry {
-            Ok(path) => v.extend(Game::from_pgn(path.as_path()).iter().cloned()),
+            Ok(path) => gt.add(Game::from_pgn(path.as_path())),
             Err(e)   => println!("{:?}", e),
         }
     }
