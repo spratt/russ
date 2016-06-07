@@ -39,9 +39,13 @@ This utility does not correctly parse PGN files, only a simple
 approximation.  For example, {comments} are assumed to begin a line
 and last until the end of the line, as in:
 
+```
 {This is a successfully parsed comment.}
+```
 
 But the following will not parse correctly:
 
+```
  {This line begins with a space and continues into the next line,
 which breaks my assumptions.}
+```
