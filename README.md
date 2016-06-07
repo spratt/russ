@@ -10,47 +10,57 @@ Usage
 =====
 
 Call `cargo run` from the command line in the project's root
-directory.  Russ will read all the `*.pgn` files in `data/`.  By
-default, only one file is kept in `data/` and the rest are in
-`more_data/`.  This is for debug purposes, since it takes forever to
-parse everything.  For production use, move all `*.pgn` files into
-`data/`.
+directory.  Russ will read all the `*.pgn` files in `data/`.  For
+debugging, I recommend moving all but `gm1830.pgn` out of data, to
+reduce loading time.
 
 ```bash
 $ cargo run
      Running `target/debug/russ`
-Parsing data files..done.
+Parsing data files.......done.
 ? -> print this message
 m -> print moves
 r -> print results
 t -> print top ten moves
-x -> expand
+x -> expand one move
+p -> pop last move
 q -> quit
-> ?
-? -> print this message
-m -> print moves
-r -> print results
-t -> print top ten moves
-x -> expand
-q -> quit
+> t
+e4         142263	white: 34.16, black: 23.10, draw: 42.74
+d4         131608	white: 34.70, black: 20.76, draw: 44.54
+Nf3         29319	white: 33.57, black: 21.69, draw: 44.74
+c4          25478	white: 35.92, black: 20.99, draw: 43.09
+g3           2046	white: 33.77, black: 24.88, draw: 41.35
+b3            853	white: 33.06, black: 27.32, draw: 39.62
+f4            773	white: 30.53, black: 34.15, draw: 35.32
+Nc3           283	white: 27.21, black: 21.20, draw: 51.59
+b4            149	white: 23.49, black: 28.19, draw: 48.32
+> r
+Results { white: 114649, black: 73136, draw: 145324 }
+> x
+x> e4
+> r
+Results { white: 48593, black: 32869, draw: 60801 }
+> t
+c5          60488	white: 33.93, black: 24.44, draw: 41.63
+e5          42771	white: 32.91, black: 22.00, draw: 45.09
+e6          16584	white: 35.72, black: 22.67, draw: 41.61
+c6          11235	white: 33.40, black: 20.96, draw: 45.64
+d6           4051	white: 39.15, black: 22.59, draw: 38.26
+g6           2699	white: 38.16, black: 23.68, draw: 38.16
+d5           1986	white: 38.52, black: 21.00, draw: 40.48
+Nf6          1986	white: 37.26, black: 23.01, draw: 39.73
+Nc6           319	white: 37.93, black: 31.35, draw: 30.72
+> m
+Moves: ["e4"]
+> p
 > m
 Moves: []
-> r
-Results { white: 5963, black: 4965, draw: 4433 }
-> t
-e4		9290
-d4		4832
-Nf3		485
-c4		448
-f4		184
-e3		61
-a3		13
-g3		12
-b3		9
-> x
-Not yet implemented.
 > q
 ```
+
+Note that the above output shows that of the ~200,000 games for which
+there is included data, 142,263 of them start with white moving to `e4`.
 
 Warning
 =======
