@@ -196,7 +196,10 @@ impl GameTree {
         }
         let mut v = Vec::new();
         for _ in 1..10 {
-            v.push(heap.pop().unwrap());
+            match heap.pop() {
+                Some(t) => v.push(t),
+                _ => break,
+            }
         }
         v
     }
