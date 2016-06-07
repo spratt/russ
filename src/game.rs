@@ -6,11 +6,24 @@ use std::collections::HashMap;
 use std::io::{BufRead, BufReader};
 use std::fs::File;
 
+#[derive(Debug)]
 pub struct Results {
     white: u64,
     black: u64,
     draw: u64,
 }
+
+impl Results {
+    fn new(s: &str) -> Results {
+        match s {
+            "1-0"     => Results { white: 1, black: 0, draw: 0 },
+            "0-1"     => Results { white: 0, black: 1, draw: 0 },
+            "1/2-1/2" => Results { white: 0, black: 0, draw: 1 },
+            _         => Results { white: 0, black: 0, draw: 0 },
+        }
+    }
+}
+        
 
 impl Clone for Results {
     fn clone(&self) -> Results {
@@ -39,7 +52,7 @@ impl Clone for Game {
 }
 
 fn remove_first_last(s: &String) -> String {
-    s.graphemes(true).skip(1).take(s.len() - 1).collect::<String>()
+    s.graphemes(true).skip(1).take(s.len() - 2).collect::<String>()
 }
 
 impl Game {
@@ -68,9 +81,10 @@ impl Game {
 
     fn parse_results(tagpairs: &HashMap<String, String>) -> Results {
         match tagpairs.get("Result").map(String::as_ref) {
-            Some("1-0") => Results { white: 1, black: 0, draw: 0 },
-            Some("0-1") => Results { white: 0, black: 1, draw: 0 },
-            Some("1/2-1/2") => Results { white: 0, black: 0, draw: 1 },
+            // Some("1-0") => Results { white: 1, black: 0, draw: 0 },
+            // Some("0-1") => Results { white: 0, black: 1, draw: 0 },
+            // Some("1/2-1/2") => Results { white: 0, black: 0, draw: 1 },
+            Some(s) => Results::new(s),
             _ => Results { white: 0, black: 0, draw: 0 },
         }
     }
@@ -122,20 +136,22 @@ impl Game {
 
 pub struct GameTree {
     moves: Vec<String>,
-    game_vecs: HashMap<String, Vec<Game>>,
+    games: HashMap<String, Vec<Game>>,
+    pub results: Results,
+    game_trees: HashMap<String, GameTree>,
 }
 
 impl GameTree {
     pub fn new() -> GameTree {
-        GameTree {
-            moves: Vec::new(),
-            game_vecs: HashMap::new(),
-        }
+        GameTree::from_moves(Vec::new())
     }
-    pub fn from_moves(moves: &Vec<String>) -> GameTree {
+    
+    pub fn from_moves(moves: Vec<String>) -> GameTree {
         GameTree {
             moves: moves.clone(),
-            game_vecs: HashMap::new(),
+            games: HashMap::new(),
+            results: Results { white: 0, black: 0, draw: 0 },
+            game_trees: HashMap::new(),
         }
     }
 
@@ -143,10 +159,25 @@ impl GameTree {
         for game in v {
             let n = self.moves.len();
             let next_move: &str = game.moves[n].as_ref();
-            if !self.game_vecs.contains_key(next_move) {
-                self.game_vecs.insert(String::from(next_move), Vec::new());
+            if !self.games.contains_key(next_move) {
+                self.games.insert(String::from(next_move), Vec::new());
             }
-            self.game_vecs.get_mut(next_move).unwrap().push(game.clone());
+            self.games.get_mut(next_move).unwrap().push(game.clone());
+            self.results.white += game.results.white;
+            self.results.black += game.results.black;
+            self.results.draw += game.results.draw;
         }
     }
+
+    // pub fn expand(&mut self, next_move: &str) {
+    //     if self.game_trees.contains_key(next_move) {
+    //         return;
+    //     }
+    //     if !self.games.contains_key(next_move) {
+    //         return;
+    //     }
+    //     self.game_trees.insert(String::from(next_move),
+    //                            GameTree::from_moves(self.games.get(next_move)
+    //                                                 .unwrap()));
+    // }
 }
