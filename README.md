@@ -23,12 +23,12 @@ Parsing data files.......done.
 Results { white: 114649, black: 73136, draw: 145324 }
 e4		142263
 d4		131608
-Nf3	29319
+Nf3		29319
 c4		25478
 g3		2046
 b3		853
 f4		773
-Nc3	283
+Nc3		283
 b4		149
 ```
 
