@@ -9,7 +9,12 @@ distributed in accordance with the readme.
 Usage
 =====
 
-Call `cargo run` from the command line in the project's root directory.
+Call `cargo run` from the command line in the project's root
+directory.  Russ will read all the `*.pgn` files in `data/`.  By
+default, only one file is kept in `data/` and the rest are in
+`more_data/`.  This is for debug purposes, since it takes forever to
+parse everything.  For production use, move all `*.pgn` files into
+`data/`.
 
 ```bash
 $ cargo run
