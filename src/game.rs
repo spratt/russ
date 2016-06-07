@@ -189,10 +189,10 @@ impl GameTree {
         self.game_trees.insert(String::from(next_move), gt);
     }
 
-    pub fn top_ten(&self) -> Vec<(usize, &String)> {
+    pub fn top_ten(&mut self) -> Vec<(usize, String, Results)> {
         let mut heap = BinaryHeap::new();
-        for (mov, games) in &self.games {
-            heap.push((games.len(), mov))
+        for (mov, games) in self.games.clone() {
+            heap.push((games.len(), mov));
         }
         let mut v = Vec::new();
         for _ in 1..10 {
@@ -201,7 +201,15 @@ impl GameTree {
                 _ => break,
             }
         }
-        v
+        let mut v2 = Vec::new();
+        for (n, m) in v.clone() {
+            let m_s: &str = m.as_ref();
+            self.expand(m_s);
+            v2.push((n,
+                     String::from(m_s),
+                     self.game_trees.get(m_s).unwrap().results.clone()));
+        }
+        v2
     }
 
     pub fn traverse(&self, moves: &Vec<String>) -> &GameTree {

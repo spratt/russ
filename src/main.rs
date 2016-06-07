@@ -30,8 +30,8 @@ fn main() {
             "?" => help(),
             "m" => println!("Moves: {:?}", moves),
             "r" => println!("{:?}", gt.traverse(&moves).results),
-            "t" => for (n, m) in gt.traverse(&moves).top_ten() {
-                println!("{}\t\t{}", m, n);
+            "t" => for (n, m, r) in gt.traverse_mut(&moves).top_ten() {
+                println!("{}\t\t{}\t\t{:?}", m, n, r);
             },
             "x" => {
                 print!("x> "); flush();
