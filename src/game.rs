@@ -144,7 +144,7 @@ pub struct GameTree {
     pub moves: Vec<String>,
     games: HashMap<String, Vec<Game>>,
     pub results: Results,
-    game_trees: HashMap<String, GameTree>,
+    pub game_trees: HashMap<String, GameTree>,
 }
 
 impl GameTree {
@@ -202,5 +202,25 @@ impl GameTree {
             }
         }
         v
+    }
+
+    pub fn traverse(&self, moves: &Vec<String>) -> &GameTree {
+        if moves.len() == 0 {
+            return self;
+        }
+        match moves.split_first() {
+            Some((first, rest)) => self.game_trees.get(first).unwrap().traverse(&rest.to_vec()),
+            _ => self,
+        }
+    }
+
+    pub fn traverse_mut(&mut self, moves: &Vec<String>) -> &mut GameTree {
+        if moves.len() == 0 {
+            return self;
+        }
+        match moves.split_first() {
+            Some((first, rest)) => self.game_trees.get_mut(first).unwrap().traverse_mut(&rest.to_vec()),
+            _ => self,
+        }
     }
 }
