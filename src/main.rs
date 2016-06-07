@@ -31,7 +31,7 @@ fn main() {
             "m" => println!("Moves: {:?}", moves),
             "r" => println!("{:?}", gt.traverse(&moves).results),
             "t" => for (n, m, r) in gt.traverse_mut(&moves).top_ten() {
-                println!("{}\t\t{}\t\t{:?}", m, n, r);
+                println!("{:11}{:6}\t{}", m, n, r.pct(n));
             },
             "x" => {
                 print!("x> "); flush();

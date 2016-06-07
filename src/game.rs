@@ -25,6 +25,13 @@ impl Results {
             _         => Results { white: 0, black: 0, draw: 0 },
         }
     }
+
+    pub fn pct(&self, total: usize) -> String {
+        format!("white: {:3.2}, black: {:3.2}, draw: {:3.2}",
+                100 as f64 * self.white as f64 / total as f64,
+                100 as f64 * self.black as f64 / total as f64,
+                100 as f64 * self.draw as f64 / total as f64)
+    }
 }
         
 
