@@ -43,4 +43,5 @@ and last until the end of the line, as in:
 
 But the following will not parse correctly:
 
- {This line begins with a space, and therefore breaks my assumptions.}
+ {This line begins with a space and continues into the next line,
+which breaks my assumptions.}
