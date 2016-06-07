@@ -5,6 +5,9 @@ use std::path::Path;
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader};
 use std::fs::File;
+use std::collections::BinaryHeap;
+
+////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug)]
 pub struct Results {
@@ -34,6 +37,8 @@ impl Clone for Results {
         }
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 pub struct Game {
     moves: Vec<String>,
@@ -81,9 +86,6 @@ impl Game {
 
     fn parse_results(tagpairs: &HashMap<String, String>) -> Results {
         match tagpairs.get("Result").map(String::as_ref) {
-            // Some("1-0") => Results { white: 1, black: 0, draw: 0 },
-            // Some("0-1") => Results { white: 0, black: 1, draw: 0 },
-            // Some("1/2-1/2") => Results { white: 0, black: 0, draw: 1 },
             Some(s) => Results::new(s),
             _ => Results { white: 0, black: 0, draw: 0 },
         }
@@ -114,6 +116,9 @@ impl Game {
                 Ok(ln) => ln,
                 _      => panic!("reading {}", display),
             };
+            if line.starts_with(";") || line.starts_with("{") {
+                continue;
+            }
             if line == "" {
                 reading_header = !reading_header;
                 if reading_header {
@@ -129,10 +134,11 @@ impl Game {
                 moves.push(line);
             }
         }
-        println!("{:?}", display); // remove in future
         v
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 pub struct GameTree {
     moves: Vec<String>,
@@ -169,15 +175,29 @@ impl GameTree {
         }
     }
 
-    // pub fn expand(&mut self, next_move: &str) {
-    //     if self.game_trees.contains_key(next_move) {
-    //         return;
-    //     }
-    //     if !self.games.contains_key(next_move) {
-    //         return;
-    //     }
-    //     self.game_trees.insert(String::from(next_move),
-    //                            GameTree::from_moves(self.games.get(next_move)
-    //                                                 .unwrap()));
-    // }
+    pub fn expand(&mut self, next_move: &str) {
+        if self.game_trees.contains_key(next_move) {
+            return;
+        }
+        if !self.games.contains_key(next_move) {
+            return;
+        }
+        let mut moves = self.moves.clone();
+        moves.push(String::from(next_move));
+        let mut gt = GameTree::from_moves(moves);
+        gt.add(self.games.get(next_move).unwrap().clone());
+        self.game_trees.insert(String::from(next_move), gt);
+    }
+
+    pub fn top_ten(&self) -> Vec<(usize, &String)> {
+        let mut heap = BinaryHeap::new();
+        for (mov, games) in &self.games {
+            heap.push((games.len(), mov))
+        }
+        let mut v = Vec::new();
+        for _ in 1..10 {
+            v.push(heap.pop().unwrap());
+        }
+        v
+    }
 }
