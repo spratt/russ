@@ -19,17 +19,37 @@ parse everything.  For production use, move all `*.pgn` files into
 ```bash
 $ cargo run
      Running `target/debug/russ`
-Parsing data files.......done.
-Results { white: 114649, black: 73136, draw: 145324 }
-e4		142263
-d4		131608
-Nf3		29319
-c4		25478
-g3		2046
-b3		853
-f4		773
-Nc3		283
-b4		149
+Parsing data files..done.
+? -> print this message
+m -> print moves
+r -> print results
+t -> print top ten moves
+x -> expand
+q -> quit
+> ?
+? -> print this message
+m -> print moves
+r -> print results
+t -> print top ten moves
+x -> expand
+q -> quit
+> m
+Moves: []
+> r
+Results { white: 5963, black: 4965, draw: 4433 }
+> t
+e4		9290
+d4		4832
+Nf3		485
+c4		448
+f4		184
+e3		61
+a3		13
+g3		12
+b3		9
+> x
+Not yet implemented.
+> q
 ```
 
 Warning

@@ -141,7 +141,7 @@ impl Game {
 ////////////////////////////////////////////////////////////////////////////////
 
 pub struct GameTree {
-    moves: Vec<String>,
+    pub moves: Vec<String>,
     games: HashMap<String, Vec<Game>>,
     pub results: Results,
     game_trees: HashMap<String, GameTree>,
