@@ -121,23 +121,32 @@ impl Game {
 }
 
 pub struct GameTree {
+    moves: Vec<String>,
     game_vecs: HashMap<String, Vec<Game>>,
 }
 
 impl GameTree {
     pub fn new() -> GameTree {
         GameTree {
+            moves: Vec::new(),
+            game_vecs: HashMap::new(),
+        }
+    }
+    pub fn from_moves(moves: &Vec<String>) -> GameTree {
+        GameTree {
+            moves: moves.clone(),
             game_vecs: HashMap::new(),
         }
     }
 
     pub fn add(&mut self, v: Vec<Game>) {
         for game in v {
-            let first_move: &str = game.moves[0].as_ref();
-            if !self.game_vecs.contains_key(first_move) {
-                self.game_vecs.insert(String::from(first_move), Vec::new());
+            let n = self.moves.len();
+            let next_move: &str = game.moves[n].as_ref();
+            if !self.game_vecs.contains_key(next_move) {
+                self.game_vecs.insert(String::from(next_move), Vec::new());
             }
-            self.game_vecs.get_mut(first_move).unwrap().push(game.clone());
+            self.game_vecs.get_mut(next_move).unwrap().push(game.clone());
         }
     }
 }
