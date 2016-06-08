@@ -7,6 +7,8 @@ mod game;
 use game::Game;
 use game::GameTree;
 
+mod chess;
+
 fn main() {
     let mut moves = Vec::new();
     let mut gt = GameTree::new();
