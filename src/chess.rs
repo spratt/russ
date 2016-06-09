@@ -1,7 +1,5 @@
-pub enum Player {
-    White,
-    Black,
-}
+extern crate regex;
+use self::regex::Regex;
 
 #[derive(PartialEq, Debug)]
 pub enum Piece {
@@ -48,6 +46,8 @@ fn test_piece_from_str() {
     assert_eq!(Some(Piece::Knight), Piece::from('N'));
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 #[derive(PartialEq, Debug)]
 pub enum Castle {
     Queenside,
@@ -82,6 +82,8 @@ fn test_castle_from_str() {
                Castle::from_str(String::from("O-O-O")));
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 #[derive(PartialEq, Debug)]
 struct Move {
     piece: Option<Piece>,
@@ -90,7 +92,6 @@ struct Move {
     capture: bool,
     to_file: Option<char>,   // column, 'a' to 'h'
     to_rank: Option<i8>,     // row,     1  to  8
-    en_passant: bool,
     check: bool,
     checkmate: bool,
     promotion: Option<Piece>,
@@ -110,7 +111,6 @@ impl Move {
             castle: None,
             check: false,
             checkmate: false,
-            en_passant: false,
         }
     }
     
@@ -119,9 +119,6 @@ impl Move {
         let mut mov = Move::new();
         if mov_str.contains("x") {
             mov.capture = true;
-        }
-        if mov_str.contains("e.p.") {
-            mov.en_passant = true;
         }
         if mov_str.contains("+") {
             mov.check = true;
@@ -155,7 +152,32 @@ impl Move {
                 mov_str.find("=").unwrap() + 1).unwrap());
         }
         // Get from/to positions if there
-        // TODO
+        let move_re = Regex::new(r"(?P<piece>[RNBQK])?(?P<from_file>[abcdefgh])?(?P<from_rank>[12345678])?(?P<capture>x)?(?P<to_file>[abcdefgh])(?P<to_rank>[12345678])(?P<promotion>=[RNBQ])?(?P<check>\+)?(?P<checkmate>\#)?").unwrap();
+        let move_caps = move_re.captures(mov_str);
+        // In future, we could use the following regex for castle moves
+        // let castle_re = Regex::new(r"O\-O(?P<qs>\-O)(?P<check>\+)?(?P<checkmate>\#)").unwrap();
+        // let castle_caps = castle_re.captures(mov_str);
+        if move_caps.is_some() {
+            let c = move_caps.unwrap();
+            if c.name("from_file").is_some() {
+                mov.from_file =
+                    c.name("from_file").unwrap().chars().nth(0);
+            }
+            if c.name("from_rank").is_some() {
+                mov.from_rank =
+                    Some(c.name("from_rank").unwrap().chars().nth(0).unwrap()
+                         .to_digit(10).unwrap() as i8);
+            }
+            if c.name("to_file").is_some() {
+                mov.to_file =
+                    c.name("to_file").unwrap().chars().nth(0);
+            }
+            if c.name("to_rank").is_some() {
+                mov.to_rank =
+                    Some(c.name("to_rank").unwrap().chars().nth(0).unwrap()
+                         .to_digit(10).unwrap() as i8);
+            }
+        }
         mov
     }
 
@@ -200,11 +222,32 @@ impl Move {
         if self.checkmate {
             ret.push('#');
         }
-        if self.en_passant {
-            ret.push_str(" e.p.");
-        }
         ret
     }
+}
+
+#[test]
+fn test_castle_move_from() {
+    let mut m = Move::new();
+    m.castle = Some(Castle::Kingside);
+    assert_eq!(Move::from(&String::from("O-O")), m);
+    m.checkmate = true;
+    assert_eq!(Move::from(&String::from("O-O#")), m);
+    m = Move::new();
+    m.castle = Some(Castle::Queenside);
+    m.check = true;
+    assert_eq!(Move::from(&String::from("O-O-O+")), m);
+}
+
+#[test]
+fn test_promotion_move_from() {
+    let m = Move::from(&String::from("e8=Q"));
+    let mut m2 = Move::new();
+    m2.piece = Some(Piece::Pawn);
+    m2.to_file = Some('e');
+    m2.to_rank = Some(8 as i8);
+    m2.promotion = Some(Piece::Queen);
+    assert_eq!(m2, m);
 }
 
 #[test]
@@ -220,32 +263,38 @@ fn test_pawn_move_to_str() {
 #[test]
 fn test_longest_move_to_str() {
     // https://www.chess.com/blog/kurtgodden/think-you-know-algebraic-notation
-    // according to the above site, the following is the longest legal move
+    // according to the above site, the longest legal move is exd6+ e.p.,
+    // but since PGN doesn't have special notation for en passant, I came up
+    // with exd8=Q+
     let mut m = Move::new();
+    m.piece = Some(Piece::Pawn);
     m.from_file = Some('e');
     m.capture = true;
     m.to_file = Some('d');
-    m.to_rank = Some(6 as i8);
+    m.to_rank = Some(8 as i8);
+    m.promotion = Some(Piece::Queen);
     m.check = true;
-    m.en_passant = true;
-    assert_eq!(m.to_str(), "exd6+ e.p.");
+    assert_eq!(m.to_str(), "exd8=Q+");
 }
 
 #[test]
-fn test_castle_move_from_str() {
+fn test_move_to_str_and_from_str() {
     let mut m = Move::new();
-    m.castle = Some(Castle::Kingside);
-    assert_eq!(Move::from(&String::from("O-O")), m);
-    m = Move::new();
-    m.castle = Some(Castle::Queenside);
+    m.piece = Some(Piece::Pawn);
+    m.from_file = Some('e');
+    m.capture = true;
+    m.to_file = Some('d');
+    m.to_rank = Some(8 as i8);
+    m.promotion = Some(Piece::Queen);
     m.check = true;
-    assert_eq!(Move::from(&String::from("O-O-O+")), m);
+    assert_eq!(Move::from(&m.to_str()), m);
 }
 
-#[test]
-fn test_promotion_move_from_str() {
-    let m = Move::from(&String::from("e8=Q"));
-    assert_eq!(m.promotion, Some(Piece::Queen));
+////////////////////////////////////////////////////////////////////////////////
+
+pub enum Player {
+    White,
+    Black,
 }
 
 struct State {
@@ -255,17 +304,26 @@ struct State {
 impl State {
     pub fn new() -> State {
         State {
-            board: [['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'],
-                    ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'],
-                    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-                    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-                    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-                    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-                    ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙'],
-                    ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']],
+            //        a    b    c    d    e    f    g    h
+            board: [['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'], // 8
+                    ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'], // 7
+                    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], // 6
+                    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], // 5
+                    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], // 4
+                    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], // 3
+                    ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙'], // 2
+                    ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']],// 1
         }
     }
 
-    pub fn make_move(&self, player: Player, mov: Move) {
+    fn find_piece_location(&self, player: Player, mov: Move)
+                           -> Option<(char, i8)> {
+        // TODO
+        None
+    }
+
+    pub fn make_move(&self, player: Player, mov: Move) -> Option<State> {
+        // TODO
+        None
     }
 }

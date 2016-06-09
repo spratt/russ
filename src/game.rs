@@ -1,5 +1,5 @@
 extern crate unicode_segmentation;
-use game::unicode_segmentation::UnicodeSegmentation;
+use self::unicode_segmentation::UnicodeSegmentation;
 
 use std::path::Path;
 use std::collections::HashMap;
