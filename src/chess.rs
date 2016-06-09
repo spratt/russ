@@ -292,11 +292,33 @@ fn test_move_to_str_and_from_str() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#[derive(PartialEq, Debug)]
+struct Posn {
+    file: char, // 'a' to 'h'
+    rank: i8,   //  1  to  8
+}
+
+impl Posn {
+    fn from(s: &String) -> Posn {
+        Posn {
+            file: s.chars().nth(0).unwrap(),
+            rank: s.chars().nth(1).unwrap().to_digit(10).unwrap() as i8,
+        }
+    }
+}
+
+#[test]
+fn test_posn_from() {
+    assert_eq!(Posn { file: 'e', rank: 4 as i8 },
+               Posn::from(&String::from("e4")));
+}
+
 pub enum Player {
     White,
     Black,
 }
 
+#[derive(PartialEq, Debug)]
 struct State {
     board: [[char; 8]; 8]
 }
@@ -316,14 +338,94 @@ impl State {
         }
     }
 
-    fn find_piece_location(&self, player: Player, mov: Move)
-                           -> Option<(char, i8)> {
+    fn col_from_file(f: &char) -> Option<usize> {
+        match f {
+            &'a' => Some(0 as usize),
+            &'b' => Some(1 as usize),
+            &'c' => Some(2 as usize),
+            &'d' => Some(3 as usize),
+            &'e' => Some(4 as usize),
+            &'f' => Some(5 as usize),
+            &'g' => Some(6 as usize),
+            &'h' => Some(7 as usize),
+             _  => None,
+        }
+    }
+
+    fn row_from_rank(r: &i8) -> Option<usize> {
+        match r {
+            &1 => Some(7 as usize),
+            &2 => Some(6 as usize),
+            &3 => Some(5 as usize),
+            &4 => Some(4 as usize),
+            &5 => Some(3 as usize),
+            &6 => Some(2 as usize),
+            &7 => Some(1 as usize),
+            &8 => Some(0 as usize),
+            _ => None,
+        }
+    }
+
+    fn find_all_pieces(&self, player: Player, piece: Piece) -> Vec<Posn> {
+        let v = Vec::new();
+        v
+    }
+
+    fn find_piece_location(&self, player: Player, mov: Move) -> Option<Posn> {
         // TODO
         None
     }
 
     pub fn make_move(&self, player: Player, mov: Move) -> Option<State> {
-        // TODO
-        None
+        let to = Posn { file: mov.to_file.unwrap(),
+                        rank: mov.to_rank.unwrap(), };
+        match self.find_piece_location(player, mov) {
+            Some(from) => Some(self.move_piece(from, to)),
+            _ => None,
+        }
+    }
+
+    fn move_piece(&self, from: Posn, to: Posn) -> State {
+        let mut clone = self.clone();
+        clone.board[State::row_from_rank(&to.rank).unwrap()]
+            [State::col_from_file(&to.file).unwrap()] = 
+        clone.board[State::row_from_rank(&from.rank).unwrap()]
+            [State::col_from_file(&from.file).unwrap()];
+        clone.board[State::row_from_rank(&from.rank).unwrap()]
+            [State::col_from_file(&from.file).unwrap()] = ' ';
+        clone
+    }
+}
+
+#[test]
+fn test_col_from_file() {
+    assert_eq!(Some(4 as usize), State::col_from_file(&'e'));
+}
+
+#[test]
+fn test_row_from_rank() {
+    assert_eq!(Some(4 as usize), State::row_from_rank(&(4 as i8)));
+}
+
+#[test]
+fn test_move_piece() {
+    assert_eq!(State::new().move_piece(Posn::from(&String::from("e2")),
+                                       Posn::from(&String::from("e4"))),
+               State {
+                   //        a    b    c    d    e    f    g    h
+                   board: [['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'], // 8
+                           ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'], // 7
+                           [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], // 6
+                           [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], // 5
+                           [' ', ' ', ' ', ' ', '♙', ' ', ' ', ' '], // 4
+                           [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], // 3
+                           ['♙', '♙', '♙', '♙', ' ', '♙', '♙', '♙'], // 2
+                           ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']],// 1
+               });
+}
+
+impl Clone for State {
+    fn clone(&self) -> State {
+        State { board: self.board.clone(), }
     }
 }
